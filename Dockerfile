@@ -1,5 +1,5 @@
 FROM alpine:latest AS build
-RUN apk update && apk install mvn git -y
+RUN apk update && apk install mvn git -f
 RUN cd /src/ && git clone https://github.com/99North/Sample-Web-App.git && cd Sample-Web-App/
 RUN mvn package 
 FROM tomcat:latest
