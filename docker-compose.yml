@@ -1,0 +1,31 @@
+services: 
+  builder:
+    image: alpine:3.18
+    container_name: java-builder
+    volumes:
+      - tomcat-webapps:/output          
+    environment:
+      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+      - MAVEN_HOME=/usr/share/maven
+      - PATH=/usr/lib/jvm/java-11-openjdk/bin:/usr/share/maven/bin:$PATH
+    command: ["/bin/sh", "-c", "
+      apk update && apk add --no-cache openjdk11 maven git &&
+      mkdir -p /src && cd /src &&
+      git clone https://github.com/99North/Sample-Web-App.git &&
+      cd Sample-Web-App &&
+      mvn clean package -DskipTests -q &&
+      cp target/*.war /output/ROOT.war"]    
+
+  webapp:
+    image: tomcat:9.0-jre11
+    container_name: sample-web-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - tomcat-webapps:/usr/local/tomcat/webapps  
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  volumes:
+  tomcat-webapps:  
